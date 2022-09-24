@@ -6,9 +6,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -31,36 +31,48 @@ class MainActivity : ComponentActivity() {
 
         collectLatestLifecycleFlow(viewModel.stateFlow) { number ->
             delay(200)
-            println("collectLatestLifecycleFlow: $number")
+            println("collectLatestLifecycleFlow stateFlow: $number")
         }
 
         collectLifecycleFlow(viewModel.stateFlow) { number ->
             delay(200)
-            println("collectLifecycleFlow: $number")
+            println("collectLifecycleFlow stateFlow: $number")
         }
 
         setContent {
             KotlinFlowsTheme {
                 val viewModel = viewModel<MainViewModel>()
-                val count = viewModel.stateFlow.collectAsState(initial = 0)
 
-                val sharedCount = viewModel.sharedFlow.collectAsState(initial = 0)
+                val countFromStateFlow = viewModel.stateFlow.collectAsState(initial = 0)
+                val countFromSharedFlow = viewModel.sharedFlow.collectAsState(initial = 0)
+                var sharedFlowReplayCacheSize by remember { mutableStateOf(0) }
+                var sharedFlowReplayCacheValues by remember { mutableStateOf("") }
 
                 LaunchedEffect(key1 = true) {
                     viewModel.sharedFlow.collect { number ->
-                        println("sharedFlow: $number")
+                        println("sharedFlow collect in LaunchedEffect: $number")
+                        sharedFlowReplayCacheSize = viewModel.sharedFlow.replayCache.size
+                        sharedFlowReplayCacheValues = viewModel.sharedFlow.replayCache.joinToString { it.toString() }
                     }
                 }
 
                 Column(modifier = Modifier.fillMaxSize()) {
                     Button(onClick = { viewModel.incrementCounterStateFlow() }) {
-                        Text(text = "stateFlow Counter: ${count.value}")
+                        Text(text = "stateFlow Counter: ${countFromStateFlow.value}")
                     }
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(onClick = { viewModel.setCounterSharedFlow(sharedCount.value + 1) }) {
-                        Text(text = "sharedFlow value: ${sharedCount.value}")
+                    Button(onClick = { viewModel.incrementCounterSharedFlow() }) {
+                        Text(text = "sharedFlow last value: ${countFromSharedFlow.value}")
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text("sharedFlow Cache\n" +
+                            " Size: $sharedFlowReplayCacheSize\n" +
+                            " Values: $sharedFlowReplayCacheValues",
+                        modifier = Modifier.padding(16.dp),
+                        color = MaterialTheme.colors.onBackground
+                    )
                 }
             }
         }

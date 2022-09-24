@@ -2,6 +2,7 @@ package com.realityexpander.kotlinflows
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -23,33 +24,64 @@ class MainViewModel(
         }
     }.flowOn(dispatchers.main)
 
+    // Keep the latest value as state.
     private val _stateFlow = MutableStateFlow(0)
     val stateFlow = _stateFlow.asStateFlow()
 
-    private val _sharedFlow = MutableSharedFlow<Int>(replay = 5)
+    // Used for one-time events. (can have multiple observers/collectors/subscribers unlike channels which can only have one)
+    // Hot flow, so without a collector, the emission is lost.
+    private val _sharedFlow =
+        MutableSharedFlow<Int>(
+            replay = 0 // Use NO PARAMETERS to send one-time messages that will not be replayed to new subscribers (but throttled by consumer)
+
+            //replay = 1,  // use "replay=1, DROP_OLDEST" to send messages that will be replayed for each new subscriber.
+
+            //replay = 5, // Collects 5 items until buffering (throttle)
+            //extraBufferCapacity = 5,  // will not start buffering (throttle) until 5 more items come in (after replay buffer is full)
+            //onBufferOverflow = BufferOverflow.DROP_LATEST   // when buffer is full, drop the latest item.
+            //onBufferOverflow = BufferOverflow.DROP_OLDEST // when buffer is full, drop the oldest item.
+        )
     val sharedFlow = _sharedFlow.asSharedFlow()
 
-    init {
-        setCounterSharedFlow(3)
+    var countForSharedFlow = 0
 
+    init {
+        incrementCounterSharedFlow() // no collectors set up yet, so this will be emission will lost. (if replay is 0)
+
+        // This will throttle the flow to 1 item per 500ms (unless onBufferOverflow is set to DROP_OLDEST)
         viewModelScope.launch(dispatchers.main) {
+            delay(500)
+
             sharedFlow.collect {
-                delay(2000L)
+                println("FIRST FLOW: replay cache:" + sharedFlow.replayCache.joinToString { it.toString() })
+
+                delay(500L)
                 println("FIRST FLOW: The received number is $it")
             }
         }
 
+        // This will throttle the flow to 1 item per 1500ms (unless onBufferOverflow is set to DROP_OLDEST)
         viewModelScope.launch(dispatchers.main) {
+            delay(500)
+
             sharedFlow.collect {
-                delay(3000L)
+                delay(1500L)
                 println("SECOND FLOW: The received number is $it")
             }
         }
+
+//        viewModelScope.launch {
+//            println("STARTING COUNTDOWN, THREAD: ${Thread.currentThread().name}")
+//            countDownFlow.collect {
+//                println("CountDownFlow received number is $it")
+//            }
+//        }
     }
 
-    fun setCounterSharedFlow(number: Int) {
+    fun incrementCounterSharedFlow() {
         viewModelScope.launch(dispatchers.main) {
-            _sharedFlow.emit(number)
+            println("incrementCounterSharedFlow, THREAD: ${Thread.currentThread().name}, emitting: ${++countForSharedFlow}")
+            _sharedFlow.emit(countForSharedFlow)
         }
     }
 

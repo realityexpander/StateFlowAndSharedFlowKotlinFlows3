@@ -41,7 +41,7 @@ class MainViewModelTest {
                 cancelAndConsumeRemainingEvents()
             }
         }
-        viewModel.setCounterSharedFlow(3)
+        viewModel.incrementCounterSharedFlow(3)
         job.join()
         job.cancel()
     }
