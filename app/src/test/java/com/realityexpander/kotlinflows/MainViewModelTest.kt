@@ -33,7 +33,7 @@ class MainViewModelTest {
     }
 
     @Test
-    fun `squareNumber, number properly squared`() = runBlocking {
+    fun `incrementCounterSharedFlow, number properly emitted`() = runBlocking {
         val job = launch {
             viewModel.sharedFlow.test {
                 val emission = awaitItem()
