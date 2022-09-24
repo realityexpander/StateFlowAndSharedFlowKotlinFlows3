@@ -49,6 +49,9 @@ class MainActivity : ComponentActivity() {
                 var sharedFlowReplayCacheValues by remember { mutableStateOf("") }
 
                 LaunchedEffect(key1 = true) {
+                    //delay(100)  // if the delay is here, the sharedFlow collect will not be called (sharedFlow is a hot flow)
+                    println("LaunchedEffect setup sharedFlow collector")
+
                     viewModel.sharedFlow.collect { number ->
                         println("sharedFlow collect in LaunchedEffect: $number")
                         sharedFlowReplayCacheSize = viewModel.sharedFlow.replayCache.size

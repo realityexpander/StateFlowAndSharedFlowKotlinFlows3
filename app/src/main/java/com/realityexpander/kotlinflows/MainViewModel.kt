@@ -50,23 +50,21 @@ class MainViewModel(
 
         // This will throttle the flow to 1 item per 500ms (unless onBufferOverflow is set to DROP_OLDEST)
         viewModelScope.launch(dispatchers.main) {
-            delay(500)
-
             sharedFlow.collect {
-                println("FIRST FLOW: replay cache:" + sharedFlow.replayCache.joinToString { it.toString() })
+                println("FIRST FLOW sharedFlow: replay cache:" + sharedFlow.replayCache.joinToString { it.toString() })
 
                 delay(500L)
-                println("FIRST FLOW: The received number is $it")
+                println("FIRST FLOW sharedFlow: The received number is $it")
             }
         }
 
         // This will throttle the flow to 1 item per 1500ms (unless onBufferOverflow is set to DROP_OLDEST)
         viewModelScope.launch(dispatchers.main) {
-            delay(500)
+            delay(500) // hold off on setting up this collector for 500ms
 
             sharedFlow.collect {
                 delay(1500L)
-                println("SECOND FLOW: The received number is $it")
+                println("SECOND FLOW sharedFlow: The received number is $it")
             }
         }
 
@@ -76,11 +74,13 @@ class MainViewModel(
 //                println("CountDownFlow received number is $it")
 //            }
 //        }
+
+        incrementCounterSharedFlow() // since collectors are setup now, this emission will be collected.
     }
 
     fun incrementCounterSharedFlow() {
         viewModelScope.launch(dispatchers.main) {
-            println("incrementCounterSharedFlow, THREAD: ${Thread.currentThread().name}, emitting: ${++countForSharedFlow}")
+            println("incrementCounterSharedFlow, THREAD: ${Thread.currentThread().name}, emitting sharedFlow: ${++countForSharedFlow}")
             _sharedFlow.emit(countForSharedFlow)
         }
     }
