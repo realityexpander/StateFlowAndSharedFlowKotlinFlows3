@@ -37,11 +37,12 @@ class MainViewModelTest {
         val job = launch {
             viewModel.sharedFlow.test {
                 val emission = awaitItem()
-                assertThat(emission).isEqualTo(9)
+                assertThat(emission).isEqualTo(3)
                 cancelAndConsumeRemainingEvents()
             }
         }
-        viewModel.incrementCounterSharedFlow(3)
+
+        viewModel.incrementCounterSharedFlow()
         job.join()
         job.cancel()
     }
