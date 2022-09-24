@@ -1,4 +1,4 @@
-package com.plcoding.kotlinflows
+package com.realityexpander.kotlinflows
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,13 +7,15 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class MainViewModel(
-    private val dispatchers: DispatcherProvider
+    private val dispatchers: DispatcherProvider = DefaultDispatchers()
 ) : ViewModel() {
 
     val countDownFlow = flow<Int> {
         val startingValue = 5
         var currentValue = startingValue
+
         emit(startingValue)
+
         while (currentValue > 0) {
             delay(1000L)
             currentValue--
@@ -28,13 +30,15 @@ class MainViewModel(
     val sharedFlow = _sharedFlow.asSharedFlow()
 
     init {
-        squareNumber(3)
+        setCounterSharedFlow(3)
+
         viewModelScope.launch(dispatchers.main) {
             sharedFlow.collect {
                 delay(2000L)
                 println("FIRST FLOW: The received number is $it")
             }
         }
+
         viewModelScope.launch(dispatchers.main) {
             sharedFlow.collect {
                 delay(3000L)
@@ -43,13 +47,13 @@ class MainViewModel(
         }
     }
 
-    fun squareNumber(number: Int) {
+    fun setCounterSharedFlow(number: Int) {
         viewModelScope.launch(dispatchers.main) {
-            _sharedFlow.emit(number * number)
+            _sharedFlow.emit(number)
         }
     }
 
-    fun incrementCounter() {
+    fun incrementCounterStateFlow() {
         _stateFlow.value += 1
     }
 

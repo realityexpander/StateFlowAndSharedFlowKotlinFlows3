@@ -1,4 +1,4 @@
-package com.plcoding.kotlinflows
+package com.realityexpander.kotlinflows
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

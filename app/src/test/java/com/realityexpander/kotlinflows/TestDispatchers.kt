@@ -1,4 +1,4 @@
-package com.plcoding.kotlinflows
+package com.realityexpander.kotlinflows
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi

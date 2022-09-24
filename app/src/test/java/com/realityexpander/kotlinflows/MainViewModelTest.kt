@@ -1,4 +1,4 @@
-package com.plcoding.kotlinflows
+package com.realityexpander.kotlinflows
 
 import app.cash.turbine.test
 import com.google.common.truth.Truth.assertThat
@@ -41,7 +41,7 @@ class MainViewModelTest {
                 cancelAndConsumeRemainingEvents()
             }
         }
-        viewModel.squareNumber(3)
+        viewModel.setCounterSharedFlow(3)
         job.join()
         job.cancel()
     }
