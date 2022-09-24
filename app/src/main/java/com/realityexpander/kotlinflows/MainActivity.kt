@@ -22,6 +22,12 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
+// Source material
+//https://www.youtube.com/watch?v=za-EEkqJLCQ
+
+// Testing flows
+// https://www.youtube.com/watch?v=rk6aKkWqqcI
+
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
@@ -48,6 +54,7 @@ class MainActivity : ComponentActivity() {
                 var sharedFlowReplayCacheSize by remember { mutableStateOf(0) }
                 var sharedFlowReplayCacheValues by remember { mutableStateOf("") }
 
+                // This will collect one-time events from sharedFlow
                 LaunchedEffect(key1 = true) {
                     //delay(100)  // if the delay is here, the sharedFlow collect will not be called (sharedFlow is a hot flow)
                     println("LaunchedEffect setup sharedFlow collector")
